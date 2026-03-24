@@ -3,43 +3,81 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Customer Dashboard</title>
+
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{
+background:#f4f6f9;
+font-family:Segoe UI;
+}
+
+.navbar{
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+.balance-card{
+background:linear-gradient(135deg,#667eea,#764ba2);
+color:white;
+border-radius:15px;
+}
+
+.action-card{
+border-radius:15px;
+transition:0.3s;
+cursor:pointer;
+}
+
+.action-card:hover{
+transform:translateY(-5px);
+box-shadow:0 10px 20px rgba(0,0,0,0.15);
+}
+</style>
+
 </head>
 
-<body class="bg-light">
+<body>
 
+<!-- NAVBAR -->
 <nav class="navbar navbar-dark bg-primary">
 <div class="container-fluid">
-<span class="navbar-brand">Customer Panel</span>
+<span class="navbar-brand">🏦 Fintech Bank</span>
 <a href="/logout/" class="btn btn-light btn-sm">Logout</a>
 </div>
 </nav>
 
+<!-- CONTENT -->
 <div class="container mt-4">
 
 <div class="row g-3">
 
+<!-- BALANCE -->
 <div class="col-12">
-<div class="card shadow p-3">
+<div class="card balance-card p-4 shadow">
 <h5>Account Balance</h5>
-<h3 class="text-primary">₹ 0.00</h3>
+<h2>₹ {{ balance }}</h2>
 </div>
 </div>
 
+<!-- WITHDRAW -->
 <div class="col-6">
-<div class="card shadow p-3 text-center">
+<a href="/bank/withdraw/" class="text-decoration-none text-dark">
+<div class="card action-card shadow p-3 text-center">
 <h6>Withdraw</h6>
 </div>
+</a>
 </div>
 
+<!-- TRANSFER -->
 <div class="col-6">
-<div class="card shadow p-3 text-center">
+<div class="card action-card shadow p-3 text-center">
 <h6>Fund Transfer</h6>
 </div>
 </div>
 
+<!-- HISTORY -->
 <div class="col-12">
-<div class="card shadow p-3 text-center">
+<div class="card action-card shadow p-3 text-center">
 <h6>Transaction History</h6>
 </div>
 </div>
