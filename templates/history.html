@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transaction History</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-primary">
+<div class="container-fluid">
+<span class="navbar-brand">Transaction History</span>
+<div>
+<a href="/bank/passbook/" class="btn btn-warning btn-sm">Download PDF</a>
+<a href="/customer/dashboard/" class="btn btn-light btn-sm">Back</a>
+</div>
+</div>
+</nav>
+
+<div class="container mt-4">
+
+<div class="card shadow">
+
+<table class="table table-striped mb-0">
+<thead class="table-dark">
+<tr>
+<th>Type</th>
+<th>Amount</th>
+<th>Date</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for t in transactions %}
+<tr>
+<td>{{ t.transaction_type }}</td>
+<td>₹ {{ t.amount }}</td>
+<td>{{ t.created_at }}</td>
+</tr>
+{% empty %}
+<tr>
+<td colspan="3" class="text-center">No Transactions</td>
+</tr>
+{% endfor %}
+
+</tbody>
+</table>
+
+</div>
+
+</div>
+
+</body>
+</html>

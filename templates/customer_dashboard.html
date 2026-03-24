@@ -12,10 +12,6 @@ background:#f4f6f9;
 font-family:Segoe UI;
 }
 
-.navbar{
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
-}
-
 .balance-card{
 background:linear-gradient(135deg,#667eea,#764ba2);
 color:white;
@@ -24,13 +20,13 @@ border-radius:15px;
 
 .action-card{
 border-radius:15px;
-transition:0.3s;
+transition:.3s;
 cursor:pointer;
 }
 
 .action-card:hover{
 transform:translateY(-5px);
-box-shadow:0 10px 20px rgba(0,0,0,0.15);
+box-shadow:0 10px 20px rgba(0,0,0,.15);
 }
 </style>
 
@@ -70,16 +66,38 @@ box-shadow:0 10px 20px rgba(0,0,0,0.15);
 
 <!-- TRANSFER -->
 <div class="col-6">
+<a href="/bank/transfer/" class="text-decoration-none text-dark">
 <div class="card action-card shadow p-3 text-center">
 <h6>Fund Transfer</h6>
 </div>
+</a>
+</div>
+
+<!-- FIXED DEPOSIT -->
+<div class="col-6">
+<a href="/bank/fd/" class="text-decoration-none text-dark">
+<div class="card action-card shadow p-3 text-center">
+<h6>Book Fixed Deposit</h6>
+</div>
+</a>
+</div>
+
+<!-- LOAN -->
+<div class="col-6">
+<a href="/bank/loan/" class="text-decoration-none text-dark">
+<div class="card action-card shadow p-3 text-center">
+<h6>Apply Loan</h6>
+</div>
+</a>
 </div>
 
 <!-- HISTORY -->
 <div class="col-12">
+<a href="/bank/history/" class="text-decoration-none text-dark">
 <div class="card action-card shadow p-3 text-center">
 <h6>Transaction History</h6>
 </div>
+</a>
 </div>
 
 </div>
