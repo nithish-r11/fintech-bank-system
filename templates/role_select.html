@@ -1,44 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Fintech Bank Login</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fintech Bank</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <style>
-        body{
-            background: linear-gradient(135deg,#5f2c82,#49a09d);
-            height:100vh;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-family:Segoe UI;
-        }
-        .card{
-            border:none;
-            border-radius:20px;
-            padding:30px;
-            text-align:center;
-            box-shadow:0 20px 40px rgba(0,0,0,0.2);
-        }
-        .btn-fintech{
-            border-radius:30px;
-            padding:12px;
-            font-weight:600;
-            margin-top:10px;
-        }
-    </style>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{
+background: linear-gradient(135deg,#667eea,#764ba2);
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+font-family:Segoe UI;
+}
+
+.card-box{
+background:white;
+padding:40px;
+border-radius:20px;
+box-shadow:0 20px 40px rgba(0,0,0,0.2);
+text-align:center;
+width:100%;
+max-width:400px;
+}
+
+.btn-fintech{
+border-radius:30px;
+padding:12px;
+font-weight:600;
+margin-top:10px;
+}
+
+.title{
+font-weight:700;
+margin-bottom:20px;
+}
+</style>
+
 </head>
+
 <body>
 
-<div class="card col-md-4 col-11">
-    <h3 class="mb-4">🏦 Fintech Bank</h3>
+<div class="card-box">
 
-    <a href="#" class="btn btn-primary btn-fintech w-100">Customer Login</a>
-    <a href="#" class="btn btn-success btn-fintech w-100">Employee Login</a>
-    <a href="#" class="btn btn-dark btn-fintech w-100">Admin Login</a>
+<h3 class="title">🏦 Fintech Bank</h3>
+
+<a href="/login/customer/" class="btn btn-primary btn-fintech w-100">Customer Login</a>
+<a href="/login/employee/" class="btn btn-success btn-fintech w-100">Employee Login</a>
+<a href="/login/admin/" class="btn btn-dark btn-fintech w-100">Admin Login</a>
 
 </div>
 
