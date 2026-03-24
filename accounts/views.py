@@ -1,3 +1,4 @@
 from django.shortcuts import render
 
-# Create your views here.
+def role_select(request):
+    return render(request, 'role_select.html')
