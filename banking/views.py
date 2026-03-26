@@ -184,3 +184,26 @@ def loan_view(request):
             message = "Bank Account Not Found"
 
     return render(request, 'loan.html', {'message': message})
+
+def passbook_pdf_view(request):
+
+    acc = BankAccount.objects.get(user=request.user)
+    txns = Transaction.objects.filter(account=acc).order_by("-created_at")
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="statement.pdf"'
+
+    p = canvas.Canvas(response)
+
+    y = 800
+    p.setFont("Helvetica", 12)
+
+    p.drawString(200, 820, "BANK STATEMENT")
+
+    for t in txns:
+        line = f"{t.created_at.strftime('%d-%m-%Y')}   {t.transaction_type}   ₹{t.amount}"
+        p.drawString(50, y, line)
+        y -= 25
+
+    p.save()
+    return response
