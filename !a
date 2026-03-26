@@ -1,0 +1,108 @@
+[33mcommit 6ad587b3d7d150537e82a5dae7c9e9d4451d38b1[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: Murugananthan <murugananthan2006@gmail.com>
+Date:   Tue Mar 24 15:33:38 2026 +0530
+
+    STEP 21 Fixed Deposit interest auto calculation engine implemented
+
+accounts/urls.py
+accounts/views.py
+banking/admin.py
+banking/migrations/0002_transaction.py
+banking/migrations/0003_fixeddeposit.py
+banking/migrations/0004_loan.py
+banking/migrations/0005_fixeddeposit_maturity_amount.py
+banking/models.py
+banking/urls.py
+banking/views.py
+templates/admin_dashboard.html
+templates/create_account.html
+templates/customer_dashboard.html
+templates/deposit.html
+templates/employee_dashboard.html
+templates/fd.html
+templates/history.html
+templates/loan.html
+templates/transfer.html
+
+[33mcommit 971c87717e77612164a22a9d82d3f914806de5aa[m
+Author: Murugananthan <murugananthan2006@gmail.com>
+Date:   Tue Mar 24 13:06:10 2026 +0530
+
+    STEP 8 Customer withdraw banking logic implemented
+
+banking/__init__.py
+banking/admin.py
+banking/apps.py
+banking/migrations/0001_initial.py
+banking/migrations/__init__.py
+banking/models.py
+banking/tests.py
+banking/urls.py
+banking/views.py
+core/settings.py
+core/urls.py
+templates/customer_dashboard.html
+templates/withdraw.html
+
+[33mcommit b4763656e6de0a09938b583fb980b3105abe7771[m
+Author: Murugananthan <murugananthan2006@gmail.com>
+Date:   Tue Mar 24 12:47:29 2026 +0530
+
+    STEP 6 Fintech dashboard UI layout created
+
+accounts/urls.py
+accounts/views.py
+templates/admin_dashboard.html
+templates/customer_dashboard.html
+templates/employee_dashboard.html
+templates/login.html
+templates/role_select.html
+
+[33mcommit b0d27e8636b4cb48bf7d1bc673bb53eb308b54d8[m
+Author: Murugananthan <murugananthan2006@gmail.com>
+Date:   Tue Mar 24 12:23:36 2026 +0530
+
+    STEP 4 Role selection fintech UI created
+
+accounts/urls.py
+accounts/views.py
+core/urls.py
+templates/role_select.html
+
+[33mcommit dc81d2153afacb693b0e32b33371504cd7a90f9c[m
+Author: Murugananthan <murugananthan2006@gmail.com>
+Date:   Tue Mar 24 12:19:32 2026 +0530
+
+    STEP 3 Custom user model with role system created
+
+accounts/__init__.py
+accounts/admin.py
+accounts/apps.py
+accounts/migrations/0001_initial.py
+accounts/migrations/__init__.py
+accounts/models.py
+accounts/tests.py
+accounts/views.py
+core/settings.py
+
+[33mcommit aae0c024f6db56fae61aa685aed2c73a7bf9c373[m
+Author: Murugananthan <murugananthan2006@gmail.com>
+Date:   Tue Mar 24 12:10:07 2026 +0530
+
+    STEP 2 PostgreSQL database connected
+
+core/settings.py
+
+[33mcommit 355473a83d26b017a0995502288e1a9ba69b0d41[m
+Author: Murugananthan <murugananthan2006@gmail.com>
+Date:   Tue Mar 24 11:16:09 2026 +0530
+
+    STEP 1 Foundation project setup completed
+
+.gitignore
+core/__init__.py
+core/asgi.py
+core/settings.py
+core/urls.py
+core/wsgi.py
+manage.py
