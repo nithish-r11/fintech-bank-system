@@ -1,209 +1,170 @@
-from django.shortcuts import render
-from .models import BankAccount, Transaction
-from decimal import Decimal
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
+from decimal import Decimal
 from reportlab.pdfgen import canvas
+
 from accounts.models import User
-from .models import FixedDeposit
-from .models import Loan
+from .models import BankAccount, Transaction, FixedDeposit, Loan
 
 
 def create_account_view(request):
 
-    message = ""
-
     if request.method == 'POST':
 
-        username = request.POST['username']
-        password = request.POST['password']
-        acc_type = request.POST['account_type']
-        balance = Decimal(request.POST['balance'])
-
         user = User.objects.create_user(
-            username=username,
-            password=password,
+            username=request.POST['username'],
+            password=request.POST['password'],
             role='CUSTOMER'
         )
 
         BankAccount.objects.create(
             user=user,
-            account_type=acc_type,
-            balance=balance
+            account_type=request.POST['account_type'],
+            balance=Decimal(request.POST['balance'])
         )
 
-        message = "Customer Account Created Successfully"
+    return render(request, 'create_account.html')
 
-    return render(request, 'create_account.html', {'message': message})
-
-
-# ------- existing functions below --------
 
 def withdraw_view(request):
-    message = ""
+
     if request.method == 'POST':
+
+        account = BankAccount.objects.filter(user=request.user).last()
         amount = Decimal(request.POST['amount'])
-        try:
-            account = BankAccount.objects.get(user=request.user)
-            if account.balance >= amount:
-                account.balance -= amount
-                account.save()
-                Transaction.objects.create(account=account, transaction_type='WITHDRAW', amount=amount)
-                message = "Withdrawal Successful"
-            else:
-                message = "Insufficient Balance"
-        except:
-            message = "Bank account not found"
-    return render(request, 'withdraw.html', {'message': message})
+
+        if account.balance >= amount:
+            account.balance -= amount
+            account.save()
+
+            Transaction.objects.create(account=account, transaction_type='WITHDRAW', amount=amount)
+
+    return render(request, 'withdraw.html')
 
 
 def transfer_view(request):
-    message = ""
+
     if request.method == 'POST':
-        acc_no = request.POST['account_number']
+
+        sender = BankAccount.objects.filter(user=request.user).last()
+        receiver = BankAccount.objects.get(account_number=str(request.POST['account_number']))
         amount = Decimal(request.POST['amount'])
-        try:
-            sender = BankAccount.objects.get(user=request.user)
-            receiver = BankAccount.objects.get(account_number=acc_no)
-            if sender.balance >= amount:
-                sender.balance -= amount
-                receiver.balance += amount
-                sender.save()
-                receiver.save()
-                Transaction.objects.create(account=sender, transaction_type='TRANSFER', amount=amount)
-                message = "Transfer Successful"
-            else:
-                message = "Insufficient Balance"
-        except:
-            message = "Invalid Receiver Account"
-    return render(request, 'transfer.html', {'message': message})
 
+        if sender.balance >= amount:
+            sender.balance -= amount
+            receiver.balance += amount
 
-def history_view(request):
-    try:
-        account = BankAccount.objects.get(user=request.user)
-        transactions = Transaction.objects.filter(account=account).order_by('-created_at')
-    except:
-        transactions = []
-    return render(request, 'history.html', {'transactions': transactions})
+            sender.save()
+            receiver.save()
 
+            Transaction.objects.create(account=sender, transaction_type='TRANSFER', amount=amount)
 
-def passbook_pdf(request):
-    account = BankAccount.objects.get(user=request.user)
-    transactions = Transaction.objects.filter(account=account)
-
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="passbook.pdf"'
-
-    p = canvas.Canvas(response)
-    y = 800
-    p.drawString(200, 820, "Fintech Bank Passbook")
-
-    for t in transactions:
-        text = f"{t.transaction_type}   {t.amount}   {t.created_at}"
-        p.drawString(50, y, text)
-        y -= 20
-
-    p.showPage()
-    p.save()
-
-    return response
+    return render(request, 'transfer.html')
 
 
 def deposit_view(request):
-    message = ""
-    if request.method == 'POST':
-        acc_no = request.POST['account_number']
-        amount = Decimal(request.POST['amount'])
-        try:
-            account = BankAccount.objects.get(account_number=acc_no)
-            account.balance += amount
-            account.save()
-            Transaction.objects.create(account=account, transaction_type='TRANSFER', amount=amount)
-            message = "Deposit Successful"
-        except:
-            message = "Invalid Account Number"
-    return render(request, 'deposit.html', {'message': message})
-from decimal import Decimal
-from .models import FixedDeposit
-
-def fd_view(request):
-
-    message = ""
 
     if request.method == 'POST':
 
+        account = BankAccount.objects.get(account_number=str(request.POST['account_number']))
         amount = Decimal(request.POST['amount'])
-        months = int(request.POST['months'])
 
-        account = BankAccount.objects.filter(user=request.user).first()
+        account.balance += amount
+        account.save()
 
-        if not account:
-            message = "No savings account found for this user"
-        else:
+        Transaction.objects.create(account=account, transaction_type='TRANSFER', amount=amount)
 
-            if account.balance >= amount:
+    return render(request, 'deposit.html')
 
-                account.balance -= amount
-                account.save()
 
-                FixedDeposit.objects.create(
-                    account=account,
-                    amount=amount,
-                    duration_months=months
-                )
+def history_view(request):
 
-                message = "FD Booked Successfully"
+    account = BankAccount.objects.filter(user=request.user).last()
+    txns = Transaction.objects.filter(account=account).order_by('-created_at')
 
-            else:
-                message = "Insufficient Balance"
+    return render(request, 'history.html', {'transactions': txns})
 
-    return render(request, 'fd.html', {'message': message})
-from decimal import Decimal
-
-def loan_view(request):
-
-    message = ""
-
-    if request.method == 'POST':
-
-        amount = Decimal(request.POST['amount'])
-        months = int(request.POST['months'])
-
-        try:
-            account = BankAccount.objects.get(user=request.user)
-
-            Loan.objects.create(
-                account=account,
-                amount=amount,
-                duration_months=months
-            )
-
-            message = "Loan Application Submitted Successfully"
-
-        except:
-            message = "Bank Account Not Found"
-
-    return render(request, 'loan.html', {'message': message})
 
 def passbook_pdf_view(request):
 
-    acc = BankAccount.objects.get(user=request.user)
-    txns = Transaction.objects.filter(account=acc).order_by("-created_at")
+    acc = BankAccount.objects.filter(user=request.user).last()
+    txns = Transaction.objects.filter(account=acc)
 
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="statement.pdf"'
 
     p = canvas.Canvas(response)
-
     y = 800
-    p.setFont("Helvetica", 12)
-
-    p.drawString(200, 820, "BANK STATEMENT")
 
     for t in txns:
-        line = f"{t.created_at.strftime('%d-%m-%Y')}   {t.transaction_type}   ₹{t.amount}"
-        p.drawString(50, y, line)
+        p.drawString(50, y, f"{t.created_at.strftime('%d-%m-%Y')} {t.transaction_type} ₹{t.amount}")
         y -= 25
 
     p.save()
     return response
+
+
+def fd_view(request):
+
+    if request.method == 'POST':
+
+        account = BankAccount.objects.filter(user=request.user).last()
+        amount = Decimal(request.POST['amount'])
+
+        if account.balance >= amount:
+            account.balance -= amount
+            account.save()
+
+            FixedDeposit.objects.create(
+                account=account,
+                amount=amount,
+                duration_months=int(request.POST['months'])
+            )
+
+    return render(request, 'fd.html')
+
+
+def loan_view(request):
+
+    if request.method == 'POST':
+
+        account = BankAccount.objects.filter(user=request.user).last()
+
+        Loan.objects.create(
+            account=account,
+            amount=Decimal(request.POST['amount']),
+            duration_months=int(request.POST['months'])
+        )
+
+    return render(request, 'loan.html')
+
+
+def approve_loan(request, loan_id):
+
+    loan = get_object_or_404(Loan, id=loan_id)
+
+    if loan.status == "PENDING":
+
+        account = loan.account
+        account.balance += loan.amount
+        account.save()
+
+        Transaction.objects.create(
+            account=account,
+            transaction_type="TRANSFER",
+            amount=loan.amount
+        )
+
+        loan.status = "APPROVED"
+        loan.save()
+
+    return redirect('/admin-dashboard/')
+
+
+def reject_loan(request, loan_id):
+
+    loan = get_object_or_404(Loan, id=loan_id)
+    loan.status = "REJECTED"
+    loan.save()
+
+    return redirect('/admin-dashboard/')

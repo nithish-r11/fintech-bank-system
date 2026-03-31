@@ -70,10 +70,14 @@ class FixedDeposit(models.Model):
 class Loan(models.Model):
 
     account = models.ForeignKey(BankAccount, on_delete=models.CASCADE)
+
     amount = models.DecimalField(max_digits=12, decimal_places=2)
+
     duration_months = models.IntegerField()
+
     status = models.CharField(max_length=20, default="PENDING")
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Loan - {self.account.account_number}"
+        return f"{self.account.account_number} - {self.amount}"

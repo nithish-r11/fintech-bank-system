@@ -13,11 +13,7 @@ urlpatterns = [
 
     path('logout/', views.logout_view),
 
-    # BLOCK / UNBLOCK
     path('block/<int:user_id>/', views.block_user),
     path('unblock/<int:user_id>/', views.unblock_user),
 
-    # LOAN APPROVAL
-    path('approve-loan/<int:loan_id>/', views.approve_loan),
-    path('reject-loan/<int:loan_id>/', views.reject_loan),
 ]
