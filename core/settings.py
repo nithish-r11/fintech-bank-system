@@ -4,16 +4,19 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 🔐 SECRET KEY (ENV)
+# =========================
+# 🔐 SECURITY
+# =========================
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'unsafe-secret')
 
-# 🔴 DEBUG OFF
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# 🌍 ALLOWED HOSTS
 ALLOWED_HOSTS = ['*']
 
 
+# =========================
+# 📦 INSTALLED APPS
+# =========================
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -27,10 +30,13 @@ INSTALLED_APPS = [
 ]
 
 
+# =========================
+# ⚙️ MIDDLEWARE
+# =========================
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
 
-    # ⭐ STATIC FIX (IMPORTANT)
+    # ✅ STATIC FILES (IMPORTANT)
     'whitenoise.middleware.WhiteNoiseMiddleware',
 
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -42,9 +48,15 @@ MIDDLEWARE = [
 ]
 
 
+# =========================
+# 🌐 URLS
+# =========================
 ROOT_URLCONF = 'core.urls'
 
 
+# =========================
+# 🎨 TEMPLATES
+# =========================
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -62,30 +74,44 @@ TEMPLATES = [
 ]
 
 
+# =========================
+# 🚀 WSGI
+# =========================
 WSGI_APPLICATION = 'core.wsgi.application'
 
 
-# ✅ DATABASE (AUTO FROM RENDER)
+# =========================
+# 🗄️ DATABASE (Render)
+# =========================
 DATABASES = {
     'default': dj_database_url.config(
-        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3')
+        conn_max_age=600,
+        ssl_require=True
     )
 }
 
 
+# =========================
+# 🔑 PASSWORD VALIDATION
+# =========================
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
 ]
 
 
+# =========================
+# 🌍 LANGUAGE & TIME
+# =========================
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
 
 
-# ✅ STATIC FILES
+# =========================
+# 📁 STATIC FILES
+# =========================
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
@@ -94,11 +120,18 @@ STATICFILES_DIRS = [
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# ⭐ WHITENOISE
+# ✅ WHITENOISE
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
+# =========================
+# 👤 CUSTOM USER
+# =========================
 AUTH_USER_MODEL = 'accounts.User'
+
+
+# =========================
+# 🔒 EXTRA SECURITY (OPTIONAL BUT GOOD)
+# =========================
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
