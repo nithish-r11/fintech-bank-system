@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
 
 body {
@@ -12,10 +13,29 @@ body {
 
 /* HEADER */
 .header {
+    display:flex;
+    align-items:center;
+    gap:10px;
     background:#1e7e34;
     color:white;
     padding:15px;
     font-size:20px;
+}
+
+/* BACK BUTTON */
+.back-btn{
+    text-decoration:none;
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+    background:rgba(255,255,255,0.2);
+    padding:5px 12px;
+    border-radius:8px;
+    transition:0.3s;
+}
+
+.back-btn:hover{
+    background:rgba(255,255,255,0.3);
 }
 
 /* CARD */
@@ -24,7 +44,7 @@ body {
     margin:40px auto;
     background:white;
     padding:25px;
-    border-radius:10px;
+    border-radius:12px;
     box-shadow:0 5px 20px rgba(0,0,0,0.1);
 }
 
@@ -32,7 +52,7 @@ body {
 .row {
     display:flex;
     justify-content:space-between;
-    padding:10px 0;
+    padding:12px 0;
     border-bottom:1px solid #eee;
 }
 
@@ -51,8 +71,9 @@ body {
 .status {
     background:orange;
     color:white;
-    padding:5px 10px;
-    border-radius:10px;
+    padding:5px 12px;
+    border-radius:12px;
+    font-size:13px;
 }
 
 </style>
@@ -60,8 +81,13 @@ body {
 
 <body>
 
-<div class="header">Account Details</div>
+<!-- HEADER WITH BACK BUTTON -->
+<div class="header">
+    <a href="{% url 'employee_dashboard' %}" class="back-btn">←</a>
+    <span>Account Details</span>
+</div>
 
+<!-- CARD -->
 <div class="card">
 
 <div class="row">

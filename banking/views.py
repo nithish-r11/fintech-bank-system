@@ -95,20 +95,52 @@ def transfer_view(request):
     if request.method == 'POST':
 
         sender = BankAccount.objects.filter(user=request.user).last()
-        receiver = BankAccount.objects.get(account_number=str(request.POST['account_number']))
-        amount = Decimal(request.POST['amount'])
 
-        if sender.balance >= amount:
-            sender.balance -= amount
-            receiver.balance += amount
+        acc_no = request.POST.get("account_number")
+        amount = request.POST.get("amount")
 
-            sender.save()
-            receiver.save()
+        # ✅ Safe receiver
+        receiver = BankAccount.objects.filter(account_number=acc_no).first()
 
-            Transaction.objects.create(account=sender, transaction_type='TRANSFER', amount=amount)
+        if not receiver:
+            messages.error(request, "Invalid account number ❌")
+            return redirect("transfer")
+
+        try:
+            amount = Decimal(amount)
+        except:
+            messages.error(request, "Invalid amount ❌")
+            return redirect("transfer")
+
+        if amount <= 0:
+            messages.error(request, "Amount must be greater than 0 ❌")
+            return redirect("transfer")
+
+        if sender.balance < amount:
+            messages.error(request, "Insufficient balance ❌")
+            return redirect("transfer")
+
+        if sender == receiver:
+            messages.error(request, "Cannot transfer to same account ❌")
+            return redirect("transfer")
+
+        # ✅ Transfer
+        sender.balance -= amount
+        receiver.balance += amount
+
+        sender.save()
+        receiver.save()
+
+        Transaction.objects.create(
+            account=sender,
+            transaction_type='TRANSFER',
+            amount=amount
+        )
+
+        messages.success(request, "Transfer successful ✅")
+        return redirect("transfer")
 
     return render(request, 'transfer.html')
-
 
 def deposit_view(request):
     if request.method == "POST":
