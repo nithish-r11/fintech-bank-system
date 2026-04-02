@@ -1,9 +1,11 @@
 from django.db import models
 from accounts.models import User
 from decimal import Decimal
-import random
 
 
+# =========================
+# BANK ACCOUNT
+# =========================
 class BankAccount(models.Model):
 
     ACCOUNT_TYPE = (
@@ -19,7 +21,7 @@ class BankAccount(models.Model):
 
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
-    # ⭐ NEW FIELDS
+    # ⭐ CUSTOMER DETAILS
     email = models.EmailField(null=True, blank=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
     aadhaar = models.CharField(max_length=12, null=True, blank=True)
@@ -31,9 +33,10 @@ class BankAccount(models.Model):
 
     def save(self, *args, **kwargs):
 
-        # ⭐ AUTO ACCOUNT NUMBER
+        # AUTO ACCOUNT NUMBER
         if not self.account_number:
             last = BankAccount.objects.order_by('-id').first()
+
             if last and last.account_number.isdigit():
                 self.account_number = str(int(last.account_number) + 1)
             else:
@@ -41,29 +44,52 @@ class BankAccount(models.Model):
 
         super().save(*args, **kwargs)
 
+    def __str__(self):
+        return f"{self.user.username} - {self.account_number}"
+
+
+# =========================
+# TRANSACTION
+# =========================
 class Transaction(models.Model):
 
     TRANSACTION_TYPE = (
         ('WITHDRAW', 'Withdraw'),
         ('TRANSFER', 'Transfer'),
+        ('DEPOSIT', 'Deposit'),
+        ('LOAN_CREDIT', 'Loan Credited'),
     )
 
     account = models.ForeignKey(BankAccount, on_delete=models.CASCADE)
+
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPE)
+
     amount = models.DecimalField(max_digits=12, decimal_places=2)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def is_credit(self):
+        return self.transaction_type in ['DEPOSIT', 'LOAN_CREDIT']
+
     def __str__(self):
-        return f"{self.account.account_number} - {self.transaction_type}"
+        return f"{self.account.account_number} | {self.transaction_type} | ₹{self.amount}"
 
 
+# =========================
+# FIXED DEPOSIT
+# =========================
 class FixedDeposit(models.Model):
 
     account = models.ForeignKey(BankAccount, on_delete=models.CASCADE)
+
     amount = models.DecimalField(max_digits=12, decimal_places=2)
+
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('6.50'))
+
     duration_months = models.IntegerField()
+
     maturity_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
@@ -80,7 +106,16 @@ class FixedDeposit(models.Model):
         return f"FD - {self.account.account_number}"
 
 
+# =========================
+# LOAN
+# =========================
 class Loan(models.Model):
+
+    STATUS_CHOICES = (
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    )
 
     account = models.ForeignKey(BankAccount, on_delete=models.CASCADE)
 
@@ -88,9 +123,9 @@ class Loan(models.Model):
 
     duration_months = models.IntegerField()
 
-    status = models.CharField(max_length=20, default="PENDING")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.account.account_number} - {self.amount}"
+        return f"{self.account.account_number} - ₹{self.amount} ({self.status})"

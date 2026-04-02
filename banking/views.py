@@ -2,15 +2,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from decimal import Decimal
 from reportlab.pdfgen import canvas
+from django.db.models import Sum
+from django.contrib import messages
 
 from accounts.models import User
 from .models import BankAccount, Transaction, FixedDeposit, Loan
-from django.db.models import Sum
-from .models import BankAccount, Loan
-
-from django.contrib import messages
 
 
+# =========================
+# CREATE ACCOUNT
+# =========================
 def create_account_view(request):
 
     if request.method == "POST":
@@ -20,7 +21,6 @@ def create_account_view(request):
         account_type = request.POST.get("account_type")
         balance = request.POST.get("balance")
 
-        # ⭐ NEW FIELDS
         email = request.POST.get("email")
         phone = request.POST.get("phone")
         aadhaar = request.POST.get("aadhaar").replace(" ", "")
@@ -28,12 +28,10 @@ def create_account_view(request):
         address = request.POST.get("address")
         pincode = request.POST.get("pincode")
 
-        # 🔴 USERNAME CHECK
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username already exists ❌")
             return redirect("create_account")
 
-        # 🔴 VALIDATIONS
         if len(aadhaar) != 12 or not aadhaar.isdigit():
             messages.error(request, "Aadhaar must be 12 digits ❌")
             return redirect("create_account")
@@ -46,14 +44,12 @@ def create_account_view(request):
             messages.error(request, "Pincode must be 6 digits ❌")
             return redirect("create_account")
 
-        # ✅ CREATE USER
         user = User.objects.create_user(
             username=username,
             password=password,
             role="CUSTOMER"
         )
 
-        # ✅ CREATE BANK ACCOUNT
         account = BankAccount.objects.create(
             user=user,
             account_type=account_type,
@@ -68,19 +64,19 @@ def create_account_view(request):
 
         messages.success(request, "Account Created Successfully ✅")
 
-        return render(request, "account_details.html", {
-            "account": account
-        })
+        return render(request, "account_details.html", {"account": account})
 
     return render(request, "create_account.html")
 
+
+# =========================
+# WITHDRAW
+# =========================
 def withdraw_view(request):
 
     account = BankAccount.objects.filter(user=request.user).last()
 
     if request.method == 'POST':
-
-        from decimal import Decimal
 
         try:
             amount = Decimal(request.POST['amount'])
@@ -104,11 +100,21 @@ def withdraw_view(request):
         account.balance -= amount
         account.save()
 
+        Transaction.objects.create(
+            account=account,
+            transaction_type="WITHDRAW",
+            amount=amount
+        )
+
         messages.success(request, "Withdrawal successful ✅")
         return redirect("withdraw")
 
     return render(request, 'withdraw.html', {'account': account})
 
+
+# =========================
+# TRANSFER
+# =========================
 def transfer_view(request):
 
     sender = BankAccount.objects.filter(user=request.user).last()
@@ -118,7 +124,6 @@ def transfer_view(request):
         acc_no = request.POST.get('account_number')
         amount = request.POST.get('amount')
 
-        # ❌ receiver check (safe)
         receiver = BankAccount.objects.filter(account_number=acc_no).first()
 
         if not receiver:
@@ -152,7 +157,7 @@ def transfer_view(request):
 
         Transaction.objects.create(
             account=sender,
-            transaction_type='TRANSFER',
+            transaction_type="TRANSFER",
             amount=amount
         )
 
@@ -161,13 +166,17 @@ def transfer_view(request):
 
     return render(request, "transfer.html")
 
+
+# =========================
+# DEPOSIT
+# =========================
 def deposit_view(request):
+
     if request.method == "POST":
 
         acc_no = request.POST.get("account_number")
         amount = request.POST.get("amount")
 
-        # ✅ safe query (no crash)
         account = BankAccount.objects.filter(account_number=acc_no).first()
 
         if not account:
@@ -187,19 +196,36 @@ def deposit_view(request):
         account.balance += amount
         account.save()
 
+        # ✅ ADD TRANSACTION
+        Transaction.objects.create(
+            account=account,
+            transaction_type="DEPOSIT",
+            amount=amount
+        )
+
         messages.success(request, "Deposit successful ✅")
         return redirect("deposit")
 
     return render(request, "deposit.html")
 
+
+# =========================
+# HISTORY
+# =========================
 def history_view(request):
 
     account = BankAccount.objects.filter(user=request.user).last()
     txns = Transaction.objects.filter(account=account).order_by('-created_at')
 
-    return render(request, 'history.html', {'transactions': txns})
+    return render(request, 'history.html', {
+        'transactions': txns,
+        'account': account
+    })
 
 
+# =========================
+# PDF PASSBOOK
+# =========================
 def passbook_pdf_view(request):
 
     acc = BankAccount.objects.filter(user=request.user).last()
@@ -219,6 +245,9 @@ def passbook_pdf_view(request):
     return response
 
 
+# =========================
+# FIXED DEPOSIT
+# =========================
 def fd_view(request):
 
     if request.method == 'POST':
@@ -240,7 +269,6 @@ def fd_view(request):
             messages.error(request, "Insufficient balance ❌")
             return redirect("fd")
 
-        # ✅ Deduct + create FD
         account.balance -= amount
         account.save()
 
@@ -255,6 +283,10 @@ def fd_view(request):
 
     return render(request, 'fd.html')
 
+
+# =========================
+# LOAN APPLY
+# =========================
 def loan_view(request):
 
     if request.method == 'POST':
@@ -263,7 +295,6 @@ def loan_view(request):
         amount = request.POST.get("amount")
         months = request.POST.get("months")
 
-        # ✅ Validation
         try:
             amount = Decimal(amount)
         except:
@@ -278,7 +309,6 @@ def loan_view(request):
             messages.error(request, "Invalid duration ❌")
             return redirect("loan")
 
-        # ✅ Create Loan
         Loan.objects.create(
             account=account,
             amount=amount,
@@ -290,6 +320,10 @@ def loan_view(request):
 
     return render(request, 'loan.html')
 
+
+# =========================
+# APPROVE LOAN (FIXED)
+# =========================
 def approve_loan(request, loan_id):
 
     loan = get_object_or_404(Loan, id=loan_id)
@@ -300,9 +334,10 @@ def approve_loan(request, loan_id):
         account.balance += loan.amount
         account.save()
 
+        # ✅ FIXED HERE
         Transaction.objects.create(
             account=account,
-            transaction_type="TRANSFER",
+            transaction_type="LOAN_CREDIT",  # ⭐ IMPORTANT FIX
             amount=loan.amount
         )
 
@@ -312,6 +347,9 @@ def approve_loan(request, loan_id):
     return redirect('/admin-dashboard/')
 
 
+# =========================
+# REJECT LOAN
+# =========================
 def reject_loan(request, loan_id):
 
     loan = get_object_or_404(Loan, id=loan_id)
@@ -320,6 +358,10 @@ def reject_loan(request, loan_id):
 
     return redirect('/admin-dashboard/')
 
+
+# =========================
+# ANALYTICS
+# =========================
 def analytics_view(request):
 
     total_accounts = BankAccount.objects.count()
