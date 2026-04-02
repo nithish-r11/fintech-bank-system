@@ -1,9 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from decimal import Decimal
-from reportlab.pdfgen import canvas
 from django.db.models import Sum
 from django.contrib import messages
+
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
 
 from accounts.models import User
 from .models import BankAccount, Transaction, FixedDeposit, Loan
@@ -63,7 +67,6 @@ def create_account_view(request):
         )
 
         messages.success(request, "Account Created Successfully ✅")
-
         return render(request, "account_details.html", {"account": account})
 
     return render(request, "create_account.html")
@@ -96,7 +99,6 @@ def withdraw_view(request):
             messages.error(request, "Insufficient balance ❌")
             return redirect("withdraw")
 
-        # ✅ SUCCESS
         account.balance -= amount
         account.save()
 
@@ -148,7 +150,6 @@ def transfer_view(request):
             messages.error(request, "Insufficient balance ❌")
             return redirect("transfer")
 
-        # ✅ SUCCESS
         sender.balance -= amount
         receiver.balance += amount
 
@@ -196,7 +197,6 @@ def deposit_view(request):
         account.balance += amount
         account.save()
 
-        # ✅ ADD TRANSACTION
         Transaction.objects.create(
             account=account,
             transaction_type="DEPOSIT",
@@ -224,24 +224,66 @@ def history_view(request):
 
 
 # =========================
-# PDF PASSBOOK
+# ⭐ PRO PDF STATEMENT
 # =========================
 def passbook_pdf_view(request):
 
-    acc = BankAccount.objects.filter(user=request.user).last()
-    txns = Transaction.objects.filter(account=acc)
+    account = BankAccount.objects.filter(user=request.user).last()
+    transactions = Transaction.objects.filter(account=account).order_by('-created_at')
 
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="statement.pdf"'
+    response['Content-Disposition'] = 'attachment; filename="bank_statement.pdf"'
 
-    p = canvas.Canvas(response)
-    y = 800
+    doc = SimpleDocTemplate(response, pagesize=A4)
+    styles = getSampleStyleSheet()
 
-    for t in txns:
-        p.drawString(50, y, f"{t.created_at.strftime('%d-%m-%Y')} {t.transaction_type} ₹{t.amount}")
-        y -= 25
+    elements = []
 
-    p.save()
+    # 🏦 BANK HEADER
+    elements.append(Paragraph("<b>BEBANK</b>", styles['Title']))
+    elements.append(Spacer(1, 10))
+
+    # 👤 CUSTOMER DETAILS
+    elements.append(Paragraph(f"Name: {request.user.username}", styles['Normal']))
+    elements.append(Paragraph(f"Account No: {account.account_number}", styles['Normal']))
+    elements.append(Paragraph(f"Account Type: {account.account_type}", styles['Normal']))
+    elements.append(Spacer(1, 10))
+
+    # TABLE
+    data = [["Date", "Type", "Credit (₹)", "Debit (₹)"]]
+
+    for t in transactions:
+
+        credit = ""
+        debit = ""
+
+        if t.transaction_type in ["DEPOSIT", "LOAN_CREDIT"]:
+            credit = str(t.amount)
+        else:
+            debit = str(t.amount)
+
+        data.append([
+            t.created_at.strftime("%d-%m-%Y"),
+            t.get_transaction_type_display(),
+            credit,
+            debit
+        ])
+
+    table = Table(data)
+
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+        ('TEXTCOLOR',(0,0),(-1,0),colors.white),
+        ('GRID', (0,0), (-1,-1), 1, colors.black),
+        ('ALIGN',(2,1),(-1,-1),'RIGHT'),
+    ]))
+
+    elements.append(table)
+    elements.append(Spacer(1, 20))
+
+    elements.append(Paragraph(f"<b>Available Balance: ₹{account.balance}</b>", styles['Heading2']))
+
+    doc.build(elements)
     return response
 
 
@@ -322,7 +364,7 @@ def loan_view(request):
 
 
 # =========================
-# APPROVE LOAN (FIXED)
+# APPROVE LOAN
 # =========================
 def approve_loan(request, loan_id):
 
@@ -334,10 +376,9 @@ def approve_loan(request, loan_id):
         account.balance += loan.amount
         account.save()
 
-        # ✅ FIXED HERE
         Transaction.objects.create(
             account=account,
-            transaction_type="LOAN_CREDIT",  # ⭐ IMPORTANT FIX
+            transaction_type="LOAN_CREDIT",  # ✅ FIXED
             amount=loan.amount
         )
 
