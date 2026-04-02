@@ -19,6 +19,28 @@ border-radius:20px;
 box-shadow:0 10px 25px rgba(0,0,0,.1);
 }
 
+/* 🔔 TOAST POPUP */
+.toast-box{
+position: fixed;
+top: 20px;
+right: 20px;
+padding: 12px 18px;
+color: white;
+border-radius: 8px;
+z-index: 9999;
+opacity: 0;
+transform: translateY(-20px);
+transition: 0.4s;
+}
+
+.toast-box.show{
+opacity: 1;
+transform: translateY(0);
+}
+
+.toast-success{ background:#28a745; }
+.toast-error{ background:#dc3545; }
+
 /* APP NAVBAR */
 .bottom-nav{
 position:fixed;
@@ -65,11 +87,17 @@ transform:translateY(-6px);
 <div class="container mt-5">
 
 <div class="card p-4">
+
 <h5 class="mb-3">Withdraw Money</h5>
+
+<!-- 💰 BALANCE -->
+<p class="text-muted">
+<b>Available Balance:</b> ₹ {{ account.balance|default:"0" }}
+</p>
 
 <form method="post">
 {% csrf_token %}
-<input type="number" name="amount" class="form-control mb-3" placeholder="Enter amount">
+<input type="number" name="amount" class="form-control mb-3" placeholder="Enter amount" required>
 <button class="btn btn-primary w-100">Withdraw</button>
 </form>
 
@@ -77,6 +105,31 @@ transform:translateY(-6px);
 
 </div>
 
+<!-- 🔔 POPUP MESSAGE -->
+{% if messages %}
+<div id="toast" class="toast-box"></div>
+
+<script>
+const toast = document.getElementById("toast");
+
+{% for message in messages %}
+toast.innerText = "{{ message }}";
+toast.classList.add("show");
+
+{% if message.tags == 'error' %}
+toast.classList.add("toast-error");
+{% else %}
+toast.classList.add("toast-success");
+{% endif %}
+
+setTimeout(()=>{
+toast.classList.remove("show");
+},3000);
+{% endfor %}
+</script>
+{% endif %}
+
+<!-- 🔻 NAVBAR -->
 <div class="bottom-nav">
 
 <a href="/customer/dashboard/">

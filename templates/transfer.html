@@ -19,6 +19,28 @@ border-radius:20px;
 box-shadow:0 10px 25px rgba(0,0,0,.1);
 }
 
+/* 🔔 POPUP */
+.toast-box{
+position: fixed;
+top: 20px;
+right: 20px;
+padding: 12px 18px;
+color: white;
+border-radius: 8px;
+z-index: 9999;
+opacity: 0;
+transform: translateY(-20px);
+transition: 0.4s;
+}
+
+.toast-box.show{
+opacity: 1;
+transform: translateY(0);
+}
+
+.toast-success{ background:#28a745; }
+.toast-error{ background:#dc3545; }
+
 /* ⭐ Fixed App Navbar */
 .bottom-nav{
 position:fixed;
@@ -74,11 +96,7 @@ transform:translateY(-6px);
 <input type="text" name="account_number" class="form-control mb-3" placeholder="Receiver Account Number" required>
 
 <label class="mb-1">Amount</label>
-<input type="number"
-       name="amount"
-       class="form-control mb-3"
-       placeholder="Enter amount"
-       required>
+<input type="number" name="amount" class="form-control mb-3" placeholder="Enter amount" required>
 
 <button class="btn btn-success w-100">
 Transfer Money
@@ -89,6 +107,26 @@ Transfer Money
 </div>
 
 </div>
+
+<!-- 🔔 POPUP MESSAGE -->
+{% if messages %}
+{% for message in messages %}
+
+<div class="toast-box show 
+{% if message.tags == 'error' %}toast-error{% else %}toast-success{% endif %}">
+{{ message }}
+</div>
+
+{% endfor %}
+
+<script>
+setTimeout(()=>{
+document.querySelectorAll(".toast-box").forEach(e=>{
+e.classList.remove("show");
+});
+},3000);
+</script>
+{% endif %}
 
 <!-- ⭐ Bottom Navbar -->
 <div class="bottom-nav">

@@ -76,30 +76,49 @@ def create_account_view(request):
 
 def withdraw_view(request):
 
+    account = BankAccount.objects.filter(user=request.user).last()
+
     if request.method == 'POST':
 
-        account = BankAccount.objects.filter(user=request.user).last()
-        amount = Decimal(request.POST['amount'])
+        from decimal import Decimal
 
-        if account.balance >= amount:
-            account.balance -= amount
-            account.save()
+        try:
+            amount = Decimal(request.POST['amount'])
+        except:
+            messages.error(request, "Invalid amount ❌")
+            return redirect("withdraw")
 
-            Transaction.objects.create(account=account, transaction_type='WITHDRAW', amount=amount)
+        if not account:
+            messages.error(request, "Account not found ❌")
+            return redirect("withdraw")
 
-    return render(request, 'withdraw.html')
+        if amount <= 0:
+            messages.error(request, "Enter valid amount ❌")
+            return redirect("withdraw")
 
+        if account.balance < amount:
+            messages.error(request, "Insufficient balance ❌")
+            return redirect("withdraw")
+
+        # ✅ SUCCESS
+        account.balance -= amount
+        account.save()
+
+        messages.success(request, "Withdrawal successful ✅")
+        return redirect("withdraw")
+
+    return render(request, 'withdraw.html', {'account': account})
 
 def transfer_view(request):
 
+    sender = BankAccount.objects.filter(user=request.user).last()
+
     if request.method == 'POST':
 
-        sender = BankAccount.objects.filter(user=request.user).last()
+        acc_no = request.POST.get('account_number')
+        amount = request.POST.get('amount')
 
-        acc_no = request.POST.get("account_number")
-        amount = request.POST.get("amount")
-
-        # ✅ Safe receiver
+        # ❌ receiver check (safe)
         receiver = BankAccount.objects.filter(account_number=acc_no).first()
 
         if not receiver:
@@ -113,18 +132,18 @@ def transfer_view(request):
             return redirect("transfer")
 
         if amount <= 0:
-            messages.error(request, "Amount must be greater than 0 ❌")
+            messages.error(request, "Enter valid amount ❌")
+            return redirect("transfer")
+
+        if not sender:
+            messages.error(request, "Your account not found ❌")
             return redirect("transfer")
 
         if sender.balance < amount:
             messages.error(request, "Insufficient balance ❌")
             return redirect("transfer")
 
-        if sender == receiver:
-            messages.error(request, "Cannot transfer to same account ❌")
-            return redirect("transfer")
-
-        # ✅ Transfer
+        # ✅ SUCCESS
         sender.balance -= amount
         receiver.balance += amount
 
@@ -140,7 +159,7 @@ def transfer_view(request):
         messages.success(request, "Transfer successful ✅")
         return redirect("transfer")
 
-    return render(request, 'transfer.html')
+    return render(request, "transfer.html")
 
 def deposit_view(request):
     if request.method == "POST":
@@ -205,35 +224,71 @@ def fd_view(request):
     if request.method == 'POST':
 
         account = BankAccount.objects.filter(user=request.user).last()
-        amount = Decimal(request.POST['amount'])
+        amount = request.POST.get("amount")
 
-        if account.balance >= amount:
-            account.balance -= amount
-            account.save()
+        try:
+            amount = Decimal(amount)
+        except:
+            messages.error(request, "Invalid amount ❌")
+            return redirect("fd")
 
-            FixedDeposit.objects.create(
-                account=account,
-                amount=amount,
-                duration_months=int(request.POST['months'])
-            )
+        if amount <= 0:
+            messages.error(request, "Amount must be greater than 0 ❌")
+            return redirect("fd")
+
+        if account.balance < amount:
+            messages.error(request, "Insufficient balance ❌")
+            return redirect("fd")
+
+        # ✅ Deduct + create FD
+        account.balance -= amount
+        account.save()
+
+        FixedDeposit.objects.create(
+            account=account,
+            amount=amount,
+            duration_months=int(request.POST['months'])
+        )
+
+        messages.success(request, "FD Booked Successfully 🎉")
+        return redirect("fd")
 
     return render(request, 'fd.html')
-
 
 def loan_view(request):
 
     if request.method == 'POST':
 
         account = BankAccount.objects.filter(user=request.user).last()
+        amount = request.POST.get("amount")
+        months = request.POST.get("months")
 
+        # ✅ Validation
+        try:
+            amount = Decimal(amount)
+        except:
+            messages.error(request, "Invalid amount ❌")
+            return redirect("loan")
+
+        if amount <= 0:
+            messages.error(request, "Amount must be greater than 0 ❌")
+            return redirect("loan")
+
+        if int(months) <= 0:
+            messages.error(request, "Invalid duration ❌")
+            return redirect("loan")
+
+        # ✅ Create Loan
         Loan.objects.create(
             account=account,
-            amount=Decimal(request.POST['amount']),
-            duration_months=int(request.POST['months'])
+            amount=amount,
+            duration_months=int(months)
         )
 
-    return render(request, 'loan.html')
+        messages.success(request, "Loan Applied Successfully 🎉")
+        return redirect("loan")
 
+    return render(request, 'loan.html')
 
 def approve_loan(request, loan_id):
 
