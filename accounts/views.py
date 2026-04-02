@@ -8,7 +8,7 @@ from banking.models import BankAccount, Transaction, Loan
 
 
 # =========================
-# ✅ SINGLE LOGIN (UPDATED)
+# ✅ SINGLE LOGIN
 # =========================
 def login_view(request):
 
@@ -61,7 +61,7 @@ def customer_dashboard(request):
 
 
 # =========================
-# EMPLOYEE DASHBOARD
+# EMPLOYEE DASHBOARD (🔥 UPDATED)
 # =========================
 def employee_dashboard(request):
 
@@ -69,10 +69,21 @@ def employee_dashboard(request):
     total_balance = BankAccount.objects.aggregate(Sum('balance'))['balance__sum'] or 0
     total_loans = Loan.objects.count()
 
+    account = None
+
+    # 🔍 SEARCH ACCOUNT
+    if request.method == "POST":
+        acc_no = request.POST.get("account_number")
+        account = BankAccount.objects.filter(account_number=acc_no).first()
+
+        if not account:
+            messages.error(request, "Account not found ❌")
+
     return render(request, "employee_dashboard.html", {
         "accounts": total_accounts,
         "balance": total_balance,
-        "loans": total_loans
+        "loans": total_loans,
+        "account": account
     })
 
 

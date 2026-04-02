@@ -2,24 +2,198 @@
 
 {% block content %}
 
-<h2>👨‍💼 Employee Dashboard</h2>
+<style>
 
-<div style="display:flex;gap:20px;flex-wrap:wrap;">
+/* 🔥 GLOBAL SPACING FIX */
+.section{
+    margin-bottom:30px;
+}
 
-    <div style="flex:1;padding:20px;background:#4CAF50;color:white;border-radius:10px;">
-        <h3>Total Accounts</h3>
-        <h2>{{ accounts }}</h2>
+/* 🔥 CENTER WRAPPER */
+.main-wrapper{
+    max-width:1100px;
+    margin:auto;
+}
+
+/* 🔥 Bigger Text */
+.stat-title{
+    font-size:18px;
+    opacity:0.9;
+}
+
+.stat-value{
+    font-size:32px;
+    font-weight:700;
+}
+
+.label{
+    font-size:16px;
+    font-weight:600;
+    color:#555;
+}
+
+.value{
+    font-size:18px;
+    font-weight:500;
+}
+
+/* 🔥 CARD IMPROVEMENT */
+.big-card{
+    padding:25px !important;
+    border-radius:18px !important;
+}
+
+/* 🔥 SPACE BETWEEN CARDS */
+.card{
+    margin-bottom:20px;
+}
+
+/* 🔥 SEARCH BOX ALIGN */
+.search-box{
+    max-width:500px;
+    margin:auto;
+}
+
+/* 🔥 DETAILS BOX */
+.details-box{
+    max-width:800px;
+    margin:auto;
+}
+
+</style>
+
+<div class="container mt-4 main-wrapper">
+
+<h2 class="mb-4 fw-bold text-center">👨‍💼 Employee Dashboard</h2>
+
+<!-- 🔔 Messages -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} text-center section">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- 🔢 STATS -->
+<div class="row justify-content-center g-4 section">
+
+    <div class="col-lg-3 col-md-4 col-10">
+        <div class="card text-white shadow big-card text-center"
+             style="background: linear-gradient(135deg,#4CAF50,#2e7d32);">
+            <div class="stat-title">Total Accounts</div>
+            <div class="stat-value">{{ accounts }}</div>
+        </div>
     </div>
 
-    <div style="flex:1;padding:20px;background:#2196F3;color:white;border-radius:10px;">
-        <h3>Total Balance</h3>
-        <h2>₹{{ balance }}</h2>
+    <div class="col-lg-3 col-md-4 col-10">
+        <div class="card text-white shadow big-card text-center"
+             style="background: linear-gradient(135deg,#2196F3,#1565c0);">
+            <div class="stat-title">Total Balance</div>
+            <div class="stat-value">₹{{ balance }}</div>
+        </div>
     </div>
 
-    <div style="flex:1;padding:20px;background:#FF9800;color:white;border-radius:10px;">
-        <h3>Total Loans</h3>
-        <h2>{{ loans }}</h2>
+    <div class="col-lg-3 col-md-4 col-10">
+        <div class="card text-white shadow big-card text-center"
+             style="background: linear-gradient(135deg,#FF9800,#ef6c00);">
+            <div class="stat-title">Total Loans</div>
+            <div class="stat-value">{{ loans }}</div>
+        </div>
     </div>
+
+</div>
+
+<!-- 🔍 SEARCH -->
+<div class="card shadow p-4 section search-box">
+
+    <h4 class="mb-3 text-center fw-bold">🔍 Search Account</h4>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="input-group">
+            <input type="text"
+                   name="account_number"
+                   class="form-control form-control-lg"
+                   placeholder="Enter Account Number"
+                   required>
+
+            <button class="btn btn-dark px-4">
+                Search
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+<!-- 📄 ACCOUNT DETAILS -->
+{% if account %}
+<div class="card shadow big-card section details-box">
+
+    <h4 class="mb-4 text-center fw-bold">📄 Account Details</h4>
+
+    <div class="row">
+
+        <div class="col-md-6 mb-3">
+            <div class="label">Account Number</div>
+            <div class="value">{{ account.account_number }}</div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="label">Customer Name</div>
+            <div class="value">{{ account.user.username }}</div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="label">Account Type</div>
+            <div class="value">{{ account.account_type }}</div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="label">Balance</div>
+            <div class="value text-success fw-bold">₹{{ account.balance }}</div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="label">Email</div>
+            <div class="value">{{ account.email|default:"-" }}</div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="label">Phone</div>
+            <div class="value">{{ account.phone|default:"-" }}</div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="label">Aadhaar</div>
+            <div class="value">{{ account.aadhaar|default:"-" }}</div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="label">PAN</div>
+            <div class="value">{{ account.pan|default:"-" }}</div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="label">Pincode</div>
+            <div class="value">{{ account.pincode|default:"-" }}</div>
+        </div>
+
+        <div class="col-12 mb-3">
+            <div class="label">Address</div>
+            <div class="value">{{ account.address|default:"-" }}</div>
+        </div>
+
+        <div class="col-12 text-center text-muted mt-3">
+            Created: {{ account.created_at|date:"d M Y H:i" }}
+        </div>
+
+    </div>
+
+</div>
+{% endif %}
 
 </div>
 
