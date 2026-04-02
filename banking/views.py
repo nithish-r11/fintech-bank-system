@@ -5,26 +5,74 @@ from reportlab.pdfgen import canvas
 
 from accounts.models import User
 from .models import BankAccount, Transaction, FixedDeposit, Loan
+from django.db.models import Sum
+from .models import BankAccount, Loan
+
+from django.contrib import messages
 
 
 def create_account_view(request):
 
-    if request.method == 'POST':
+    if request.method == "POST":
 
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        account_type = request.POST.get("account_type")
+        balance = request.POST.get("balance")
+
+        # ⭐ NEW FIELDS
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        aadhaar = request.POST.get("aadhaar").replace(" ", "")
+        pan = request.POST.get("pan").replace(" ", "")
+        address = request.POST.get("address")
+        pincode = request.POST.get("pincode")
+
+        # 🔴 USERNAME CHECK
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists ❌")
+            return redirect("create_account")
+
+        # 🔴 VALIDATIONS
+        if len(aadhaar) != 12 or not aadhaar.isdigit():
+            messages.error(request, "Aadhaar must be 12 digits ❌")
+            return redirect("create_account")
+
+        if len(pan) != 10:
+            messages.error(request, "PAN must be 10 characters ❌")
+            return redirect("create_account")
+
+        if len(pincode) != 6:
+            messages.error(request, "Pincode must be 6 digits ❌")
+            return redirect("create_account")
+
+        # ✅ CREATE USER
         user = User.objects.create_user(
-            username=request.POST['username'],
-            password=request.POST['password'],
-            role='CUSTOMER'
+            username=username,
+            password=password,
+            role="CUSTOMER"
         )
 
-        BankAccount.objects.create(
+        # ✅ CREATE BANK ACCOUNT
+        account = BankAccount.objects.create(
             user=user,
-            account_type=request.POST['account_type'],
-            balance=Decimal(request.POST['balance'])
+            account_type=account_type,
+            balance=balance,
+            email=email,
+            phone=phone,
+            aadhaar=aadhaar,
+            pan=pan,
+            address=address,
+            pincode=pincode
         )
 
-    return render(request, 'create_account.html')
+        messages.success(request, "Account Created Successfully ✅")
 
+        return render(request, "account_details.html", {
+            "account": account
+        })
+
+    return render(request, "create_account.html")
 
 def withdraw_view(request):
 
@@ -63,19 +111,35 @@ def transfer_view(request):
 
 
 def deposit_view(request):
+    if request.method == "POST":
 
-    if request.method == 'POST':
+        acc_no = request.POST.get("account_number")
+        amount = request.POST.get("amount")
 
-        account = BankAccount.objects.get(account_number=str(request.POST['account_number']))
-        amount = Decimal(request.POST['amount'])
+        # ✅ safe query (no crash)
+        account = BankAccount.objects.filter(account_number=acc_no).first()
+
+        if not account:
+            messages.error(request, "Account not found ❌")
+            return redirect("deposit")
+
+        try:
+            amount = Decimal(amount)
+        except:
+            messages.error(request, "Invalid amount ❌")
+            return redirect("deposit")
+
+        if amount <= 0:
+            messages.error(request, "Amount must be greater than 0 ❌")
+            return redirect("deposit")
 
         account.balance += amount
         account.save()
 
-        Transaction.objects.create(account=account, transaction_type='TRANSFER', amount=amount)
+        messages.success(request, "Deposit successful ✅")
+        return redirect("deposit")
 
-    return render(request, 'deposit.html')
-
+    return render(request, "deposit.html")
 
 def history_view(request):
 
@@ -168,3 +232,15 @@ def reject_loan(request, loan_id):
     loan.save()
 
     return redirect('/admin-dashboard/')
+
+def analytics_view(request):
+
+    total_accounts = BankAccount.objects.count()
+    total_balance = BankAccount.objects.aggregate(Sum('balance'))['balance__sum'] or 0
+    total_loans = Loan.objects.count()
+
+    return render(request, "analytics.html", {
+        "accounts": total_accounts,
+        "balance": float(total_balance),
+        "loans": total_loans
+    })

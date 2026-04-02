@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+
+body {
+    font-family: Arial;
+    background:#f4f6f9;
+    margin:0;
+}
+
+/* HEADER */
+.header {
+    background:#1e7e34;
+    color:white;
+    padding:15px;
+    font-size:20px;
+}
+
+/* CARD */
+.card {
+    max-width:600px;
+    margin:40px auto;
+    background:white;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.1);
+}
+
+/* ROW */
+.row {
+    display:flex;
+    justify-content:space-between;
+    padding:10px 0;
+    border-bottom:1px solid #eee;
+}
+
+/* LABEL */
+.label {
+    font-weight:bold;
+    color:#555;
+}
+
+/* VALUE */
+.value {
+    color:#222;
+}
+
+/* STATUS */
+.status {
+    background:orange;
+    color:white;
+    padding:5px 10px;
+    border-radius:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">Account Details</div>
+
+<div class="card">
+
+<div class="row">
+    <div class="label">Account No</div>
+    <div class="value">{{ account.account_number }}</div>
+</div>
+
+<div class="row">
+    <div class="label">Account Type</div>
+    <div class="value">{{ account.account_type }}</div>
+</div>
+
+<div class="row">
+    <div class="label">Email</div>
+    <div class="value">{{ account.email|default:"-" }}</div>
+</div>
+
+<div class="row">
+    <div class="label">Phone</div>
+    <div class="value">{{ account.phone|default:"-" }}</div>
+</div>
+
+<div class="row">
+    <div class="label">Aadhaar</div>
+    <div class="value">{{ account.aadhaar|default:"-" }}</div>
+</div>
+
+<div class="row">
+    <div class="label">PAN</div>
+    <div class="value">{{ account.pan|default:"-" }}</div>
+</div>
+
+<div class="row">
+    <div class="label">Address</div>
+    <div class="value">{{ account.address|default:"-" }}</div>
+</div>
+
+<div class="row">
+    <div class="label">Pincode</div>
+    <div class="value">{{ account.pincode|default:"-" }}</div>
+</div>
+
+<div class="row">
+    <div class="label">KYC Status</div>
+    <div class="status">Pending</div>
+</div>
+
+</div>
+
+</body>
+</html>

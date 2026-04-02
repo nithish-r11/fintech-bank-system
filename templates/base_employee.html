@@ -1,0 +1,214 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<title>Employee Dashboard</title>
+
+<style>
+
+/* ===== BODY (LIGHT UI) ===== */
+body{
+    margin:0;
+    font-family: 'Segoe UI', sans-serif;
+    background:#f5f7fb;   /* 🔥 LIGHT BG */
+    color:#333;
+}
+
+/* ===== CONTENT ===== */
+.main-content{
+    padding:20px;
+    padding-bottom:110px;
+}
+
+/* ===== CARD DESIGN ===== */
+.card-container{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:14px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.08);
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-3px);
+}
+
+.card h3{
+    margin:0;
+    font-size:14px;
+    color:#777;
+}
+
+.card h1{
+    margin:10px 0 0;
+    font-size:22px;
+    color:#222;
+}
+
+/* ===== FORM STYLE ===== */
+input, select, textarea{
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border-radius:10px;
+    border:1px solid #ddd;
+    font-size:14px;
+    background:white;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:#5f6cff;
+    color:white;
+    font-size:15px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#4a54e1;
+}
+
+/* ===== NAVBAR (UNCHANGED DARK STYLE) ===== */
+.bottom-nav{
+    position:fixed;
+    bottom:18px;
+    left:50%;
+    transform:translateX(-50%);
+
+    width:92%;
+    max-width:420px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    background:rgba(20,20,30,0.85);
+    backdrop-filter: blur(18px);
+
+    border-radius:30px;
+    padding:10px 6px;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.6),
+        inset 0 0 8px rgba(255,255,255,0.05);
+}
+
+.nav-item{
+    flex:1;
+    text-align:center;
+    text-decoration:none;
+    color:#aaa;
+    font-size:11px;
+
+    padding:10px 0;
+    border-radius:20px;
+
+    transition:all 0.3s ease;
+}
+
+.nav-item .material-icons{
+    display:block;
+    font-size:22px;
+    margin-bottom:3px;
+}
+
+/* ACTIVE */
+.nav-item.active{
+    background:linear-gradient(135deg,#7f5af0,#5f6cff);
+    color:white;
+
+    box-shadow:
+        0 0 12px rgba(127,90,240,0.7),
+        0 0 25px rgba(95,108,255,0.5);
+
+    transform:scale(1.05);
+}
+
+.nav-item:hover{
+    color:white;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="main-content">
+
+    {% block content %}
+
+    <!-- SAMPLE DASHBOARD UI -->
+    <h2>👨‍💼 Employee Dashboard</h2>
+
+    <div class="card-container">
+        <div class="card">
+            <h3>Total Accounts</h3>
+            <h1>{{ total_accounts }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>Total Balance</h3>
+            <h1>₹{{ total_balance }}</h1>
+        </div>
+
+        <div class="card">
+            <h3>Total Loans</h3>
+            <h1>{{ total_loans }}</h1>
+        </div>
+    </div>
+
+    {% endblock %}
+
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<div class="bottom-nav">
+
+    <a href="{% url 'employee_dashboard' %}"
+       class="nav-item {% if 'dashboard' in request.path %}active{% endif %}">
+        <span class="material-icons">home</span>
+        Home
+    </a>
+
+    <a href="{% url 'create_account' %}"
+       class="nav-item {% if 'create-account' in request.path %}active{% endif %}">
+        <span class="material-icons">person_add</span>
+        Create
+    </a>
+
+    <a href="{% url 'deposit' %}"
+       class="nav-item {% if 'deposit' in request.path %}active{% endif %}">
+        <span class="material-icons">account_balance_wallet</span>
+        Deposit
+    </a>
+
+    <a href="{% url 'analytics' %}"
+       class="nav-item {% if 'analytics' in request.path %}active{% endif %}">
+        <span class="material-icons">bar_chart</span>
+        Analytics
+    </a>
+
+    <!-- safer logout -->
+    <a href="/logout/" class="nav-item">
+        <span class="material-icons">logout</span>
+        Logout
+    </a>
+
+</div>
+
+</body>
+</html>

@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from .models import User
 from banking.models import BankAccount, Transaction, Loan
 from django.db import models
+from banking.models import BankAccount, Loan
+from django.db.models import Sum
 
 
 def role_select(request):
@@ -37,17 +39,32 @@ def login_view(request, role):
 
 def customer_dashboard(request):
 
-    account = BankAccount.objects.filter(user=request.user).order_by('-id').first()
+    account = BankAccount.objects.filter(user=request.user).first()
+
+    # ⭐ FIX: account இல்லனா create பண்ணு
+    if not account:
+        account = BankAccount.objects.create(
+            user=request.user,
+            account_type="SAVINGS",
+            balance=0
+        )
 
     return render(request, "customer_dashboard.html", {
         "account": account,
         "balance": account.balance
     })
 
-
 def employee_dashboard(request):
-    return render(request, "employee_dashboard.html")
 
+    total_accounts = BankAccount.objects.count()
+    total_balance = BankAccount.objects.aggregate(Sum('balance'))['balance__sum'] or 0
+    total_loans = Loan.objects.count()
+
+    return render(request, "employee_dashboard.html", {
+        "accounts": total_accounts,
+        "balance": total_balance,
+        "loans": total_loans
+    })
 
 def admin_dashboard(request):
 

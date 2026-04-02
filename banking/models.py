@@ -9,24 +9,37 @@ class BankAccount(models.Model):
     ACCOUNT_TYPE = (
         ('SAVINGS', 'Savings'),
         ('CURRENT', 'Current'),
-        ('FD', 'Fixed Deposit'),
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    account_number = models.CharField(max_length=12, unique=True)
+
+    account_number = models.CharField(max_length=20, unique=True, blank=True)
+
     account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPE)
-    balance = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
-    is_active = models.BooleanField(default=True)
+
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    # ⭐ NEW FIELDS
+    email = models.EmailField(null=True, blank=True)
+    phone = models.CharField(max_length=15, null=True, blank=True)
+    aadhaar = models.CharField(max_length=12, null=True, blank=True)
+    pan = models.CharField(max_length=10, null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    pincode = models.CharField(max_length=6, null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
+
+        # ⭐ AUTO ACCOUNT NUMBER
         if not self.account_number:
-            self.account_number = str(random.randint(100000000000, 999999999999))
+            last = BankAccount.objects.order_by('-id').first()
+            if last and last.account_number.isdigit():
+                self.account_number = str(int(last.account_number) + 1)
+            else:
+                self.account_number = "10001"
+
         super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.account_number
-
 
 class Transaction(models.Model):
 

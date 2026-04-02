@@ -1,0 +1,29 @@
+{% extends 'base_employee.html' %}
+
+{% block content %}
+
+<h2>📊 Analytics</h2>
+
+<div style="display:flex;gap:20px;">
+    <div>Total Accounts: {{ accounts }}</div>
+    <div>Total Balance: ₹{{ balance }}</div>
+    <div>Total Loans: {{ loans }}</div>
+</div>
+
+<canvas id="chart"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+new Chart(document.getElementById("chart"), {
+    type: 'bar',
+    data: {
+        labels: ['Accounts', 'Loans', 'Balance'],
+        datasets: [{
+            label: 'Data',
+            data: [{{ accounts }}, {{ loans }}, {{ balance }}]
+        }]
+    }
+});
+</script>
+
+{% endblock %}
