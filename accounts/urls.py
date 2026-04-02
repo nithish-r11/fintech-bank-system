@@ -3,17 +3,19 @@ from . import views
 
 urlpatterns = [
 
-    path('', views.role_select),
+    # ✅ SINGLE LOGIN PAGE
+    path('', views.login_view, name="login"),
 
-    path('login/<str:role>/', views.login_view),
+    # DASHBOARDS
+    path('customer/dashboard/', views.customer_dashboard, name="customer_dashboard"),
+    path('employee/dashboard/', views.employee_dashboard, name='employee_dashboard'),
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
 
-    path('customer/dashboard/', views.customer_dashboard),
-    path('employee/dashboard/', views.employee_dashboard,name='employee_dashboard'),
-    path('admin-dashboard/', views.admin_dashboard),
+    # AUTH
+    path('logout/', views.logout_view, name='logout'),
 
-    path('logout/', views.logout_view),
-
-    path('block/<int:user_id>/', views.block_user),
-    path('unblock/<int:user_id>/', views.unblock_user),
+    # ADMIN CONTROLS
+    path('block/<int:user_id>/', views.block_user, name='block_user'),
+    path('unblock/<int:user_id>/', views.unblock_user, name='unblock_user'),
 
 ]
