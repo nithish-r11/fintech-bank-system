@@ -39,19 +39,10 @@ def login_view(request, role):
 
 def customer_dashboard(request):
 
-    account = BankAccount.objects.filter(user=request.user).first()
-
-    # ⭐ FIX: account இல்லனா create பண்ணு
-    if not account:
-        account = BankAccount.objects.create(
-            user=request.user,
-            account_type="SAVINGS",
-            balance=0
-        )
+    account = BankAccount.objects.filter(user=request.user).last()
 
     return render(request, "customer_dashboard.html", {
-        "account": account,
-        "balance": account.balance
+        "account": account
     })
 
 def employee_dashboard(request):
