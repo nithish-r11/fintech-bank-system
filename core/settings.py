@@ -1,14 +1,17 @@
 from pathlib import Path
-from decouple import config
+import os
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# 🔐 SECRET KEY (ENV)
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'unsafe-secret')
 
-SECRET_KEY = 'django-insecure-change-this-later'
+# 🔴 DEBUG OFF
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-DEBUG = True
-
-ALLOWED_HOSTS = []
+# 🌍 ALLOWED HOSTS
+ALLOWED_HOSTS = ['*']
 
 
 INSTALLED_APPS = [
@@ -26,6 +29,10 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+
+    # ⭐ STATIC FIX (IMPORTANT)
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -41,7 +48,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],   # global templates folder later
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -58,44 +65,37 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 
+# ✅ DATABASE (AUTO FROM RENDER)
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'fintech_bank_db',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres123',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3')
+    )
 }
 
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
 ]
 
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'Asia/Kolkata'
-
 USE_I18N = True
-
 USE_TZ = True
 
 
-STATIC_URL = 'static/'
+# ✅ STATIC FILES
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# ⭐ WHITENOISE
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
