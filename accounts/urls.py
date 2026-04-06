@@ -17,5 +17,6 @@ urlpatterns = [
     # ADMIN CONTROLS
     path('block/<int:user_id>/', views.block_user, name='block_user'),
     path('unblock/<int:user_id>/', views.unblock_user, name='unblock_user'),
+    path('login/', views.login_view, name='login')
 
 ]
