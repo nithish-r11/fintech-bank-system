@@ -4,6 +4,7 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 # =========================
 # 🔐 SECURITY
 # =========================
@@ -36,7 +37,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
 
-    # ✅ STATIC FILES (IMPORTANT)
+    # ✅ STATIC FILES FIX
     'whitenoise.middleware.WhiteNoiseMiddleware',
 
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -81,12 +82,13 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 
 # =========================
-# 🗄️ DATABASE (Render)
+# 🗄️ DATABASE (LOCAL + RENDER)
 # =========================
 DATABASES = {
     'default': dj_database_url.config(
+        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),  # ⭐ fallback for local
         conn_max_age=600,
-        ssl_require=True
+        ssl_require=False
     )
 }
 
@@ -104,7 +106,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # 🌍 LANGUAGE & TIME
 # =========================
 LANGUAGE_CODE = 'en-us'
+
 TIME_ZONE = 'Asia/Kolkata'
+
 USE_I18N = True
 USE_TZ = True
 
@@ -131,7 +135,7 @@ AUTH_USER_MODEL = 'accounts.User'
 
 
 # =========================
-# 🔒 EXTRA SECURITY (OPTIONAL BUT GOOD)
+# 🔒 SECURITY (OPTIONAL)
 # =========================
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
