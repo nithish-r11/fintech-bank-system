@@ -158,3 +158,15 @@ def create_admin(request):
         return HttpResponse("Admin created ✅")
 
     return HttpResponse("Admin already exists 👍")
+
+def create_employee(request):
+
+    if not User.objects.filter(username="employee1").exists():
+        User.objects.create_user(
+            username="NITHISH KUMAR",
+            password="black2006",
+            role="EMPLOYEE"
+        )
+        return HttpResponse("Employee created ✅")
+
+    return HttpResponse("Employee already exists 👍")
